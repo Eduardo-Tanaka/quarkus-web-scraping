@@ -3,6 +3,7 @@ package tanaka.eduardo;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -28,6 +29,9 @@ public class GreetingResource {
     @Inject
     ScraperService scraperService;
 
+    @ConfigProperty(name = "CHROME_DRIVER_PATH")
+    String chromeDriver;
+
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String hello() {
@@ -39,7 +43,7 @@ public class GreetingResource {
     @Produces(MediaType.TEXT_PLAIN)
     public String teste() throws IOException, InterruptedException {
         //declare the chrome driver from the local machine location
-        System.setProperty("webdriver.chrome.driver", "");
+        System.setProperty("webdriver.chrome.driver", chromeDriver);
 
         //create object of chrome options
         ChromeOptions options = new ChromeOptions();
@@ -61,7 +65,7 @@ public class GreetingResource {
         driver.close();
 
         //WebElement firstResult = wait.until(presenceOfElementLocated(By.cssSelector("#filter--result-table-resumo")));
-        return ss;
+        return chromeDriver + ss;
 
 
 
