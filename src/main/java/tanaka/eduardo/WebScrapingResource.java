@@ -2,6 +2,7 @@ package tanaka.eduardo;
 
 import com.google.common.collect.Lists;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.hibernate.validator.constraints.Length;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -16,13 +17,15 @@ import tanaka.eduardo.model.AcaoDadosId;
 import tanaka.eduardo.repository.AcaoRepository;
 import tanaka.eduardo.service.WebScrapingService;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -32,6 +35,7 @@ import java.util.Optional;
 import static org.openqa.selenium.support.ui.ExpectedConditions.presenceOfElementLocated;
 
 @Path("/web-scraping")
+@ApplicationScoped
 public class WebScrapingResource {
 
     private final Logger log = LoggerFactory.getLogger(WebScrapingResource.class);
@@ -46,8 +50,60 @@ public class WebScrapingResource {
     WebScrapingService webScrapingService;
 
     @GET
-    @Transactional
-    public Response teste(@QueryParam("codigo") @NotEmpty String codigoAcao) {
+    @Path("{codigo}")
+    public Response scrapByCodigo(@PathParam("codigo") @Length(min = 6, max = 6) String codigo) throws Exception {
+        // declare the chrome driver from the local machine location
+        System.setProperty("webdriver.chrome.driver", chromeDriver);
+
+        // create object of chrome options
+        ChromeOptions options = new ChromeOptions();
+
+        // add the headless argument
+        options.addArguments("headless");
+
+        // pass the options parameter in the Chrome driver declaration
+        WebDriver driver = new ChromeDriver(options);
+
+        // Navigate to site url
+        driver.get("https://fiis.com.br/" + codigo + "/");
+
+        WebDriverWait wait = new WebDriverWait(driver, 10);
+        WebElement firstResult = wait.until(presenceOfElementLocated(By.cssSelector("#last-revenues--table tbody")));
+        List<WebElement> lista = firstResult.findElements(By.tagName("tr"));
+
+        for (WebElement tr : lista) {
+            List<WebElement> tds = tr.findElements(By.tagName("td"));
+
+            // verifica se existe a acao gravada no banco
+            Optional<Acao> acao = acaoRepository.find("id", codigo).firstResultOptional();
+
+            if (acao.isPresent()) {
+                AcaoDados acaoDados = new AcaoDados();
+                AcaoDadosId acaoDadosId = new AcaoDadosId();
+                acaoDados.setRendimento(new BigDecimal(tds.get(4).getText().replace("R$", "").replace(",", ".").trim()));
+                acaoDadosId.setDataPagamento(LocalDate.parse(tds.get(1).getText(), DateTimeFormatter.ofPattern("dd/MM/yy")));
+                acaoDadosId.setDataBase(LocalDate.parse(tds.get(0).getText(), DateTimeFormatter.ofPattern("dd/MM/yy")));
+
+                try {
+                    acaoDados.setAcaoDadosId(acaoDadosId);
+                    acaoDados.setAcao(acao.get());
+
+                    webScrapingService.salvaDados(acaoDados);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            } else {
+                log.error("Ação não cadastrada");
+                throw new Exception("Ação não cadastrada");
+            }
+        }
+
+        return Response.ok().entity(lista.toString()).build();
+    }
+
+    @GET
+    @Path("/resumo")
+    public Response scrap(@QueryParam("codigo") @NotEmpty String codigoAcao) {
         // lista de ações q serão gravados
         String[] codigos = codigoAcao.split(",");
 
@@ -86,7 +142,7 @@ public class WebScrapingResource {
                             if (acao.isPresent()) {
                                 AcaoDados acaoDados = new AcaoDados();
                                 AcaoDadosId acaoDadosId = new AcaoDadosId();
-                                acaoDados.setRendimento(Double.parseDouble(tds.get(1).getText().replace(",", ".")));
+                                acaoDados.setRendimento(new BigDecimal(tds.get(1).getText().replace(",", ".").trim()));
                                 acaoDadosId.setDataPagamento(LocalDate.parse(tds.get(3).getText(), DateTimeFormatter.ofPattern("dd/MM/yy")));
                                 acaoDadosId.setDataBase(LocalDate.parse(tds.get(4).getText(), DateTimeFormatter.ofPattern("dd/MM/yy")));
 

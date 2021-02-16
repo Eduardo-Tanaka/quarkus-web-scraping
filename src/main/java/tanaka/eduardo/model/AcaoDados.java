@@ -2,6 +2,7 @@ package tanaka.eduardo.model;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "TB_ACAO_DADOS")
@@ -15,7 +16,7 @@ public class AcaoDados implements Serializable {
     private Acao acao;
 
     @Column(name = "VL_RENDIMENTO")
-    private Double rendimento;
+    private BigDecimal rendimento;
 
     public AcaoDadosId getAcaoDadosId() {
         return acaoDadosId;
@@ -33,11 +34,11 @@ public class AcaoDados implements Serializable {
         this.acao = acao;
     }
 
-    public Double getRendimento() {
+    public BigDecimal getRendimento() {
         return rendimento;
     }
 
-    public void setRendimento(Double rendimento) {
+    public void setRendimento(BigDecimal rendimento) {
         this.rendimento = rendimento;
     }
 }

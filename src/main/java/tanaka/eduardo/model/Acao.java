@@ -1,9 +1,11 @@
 package tanaka.eduardo.model;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.List;
 
 @Entity
 @Table(name = "TB_ACAO")
@@ -15,9 +17,6 @@ public class Acao implements Serializable {
 
     @Column(name = "DT_ACAO")
     private LocalDate data;
-
-    @OneToMany
-    private List<AcaoDados> acaoDadosList;
 
     public String getId() {
         return id;
@@ -35,11 +34,4 @@ public class Acao implements Serializable {
         this.data = data;
     }
 
-    public List<AcaoDados> getAcaoDadosList() {
-        return acaoDadosList;
-    }
-
-    public void setAcaoDadosList(List<AcaoDados> acaoDadosList) {
-        this.acaoDadosList = acaoDadosList;
-    }
 }
