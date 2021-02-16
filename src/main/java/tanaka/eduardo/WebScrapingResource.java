@@ -1,6 +1,5 @@
 package tanaka.eduardo;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.hibernate.validator.constraints.Length;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +23,6 @@ import java.util.stream.Collectors;
 public class WebScrapingResource {
 
     private final Logger log = LoggerFactory.getLogger(WebScrapingResource.class);
-
-    @ConfigProperty(name = "CHROME_DRIVER_PATH")
-    String chromeDriver;
 
     @Inject
     AcaoRepository acaoRepository;

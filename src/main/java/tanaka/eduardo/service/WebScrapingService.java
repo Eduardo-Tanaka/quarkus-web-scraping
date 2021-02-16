@@ -91,10 +91,10 @@ public class WebScrapingService {
             acaoDados.setRendimento(new BigDecimal(tds.get(4).getText().replace("R$", "").replace(",", ".").trim()));
             acaoDadosId.setDataPagamento(LocalDate.parse(tds.get(1).getText(), DateTimeFormatter.ofPattern("dd/MM/yy")));
             acaoDadosId.setDataBase(LocalDate.parse(tds.get(0).getText(), DateTimeFormatter.ofPattern("dd/MM/yy")));
+            acaoDadosId.setAcao(acao.get());
 
             try {
                 acaoDados.setAcaoDadosId(acaoDadosId);
-                acaoDados.setAcao(acao.get());
 
                 salvaDados(acaoDados);
             } catch (Exception e) {
@@ -138,19 +138,22 @@ public class WebScrapingService {
                             Optional<Acao> acao = acaoRepository.find("id", tds.get(0).getText()).firstResultOptional();
 
                             if (acao.isPresent()) {
-                                AcaoDados acaoDados = new AcaoDados();
-                                AcaoDadosId acaoDadosId = new AcaoDadosId();
-                                acaoDados.setRendimento(new BigDecimal(tds.get(1).getText().replace(",", ".").trim()));
-                                acaoDadosId.setDataPagamento(LocalDate.parse(tds.get(3).getText(), DateTimeFormatter.ofPattern("dd/MM/yy")));
-                                acaoDadosId.setDataBase(LocalDate.parse(tds.get(4).getText(), DateTimeFormatter.ofPattern("dd/MM/yy")));
+                                Optional<AcaoDados> ad = acaoDadosRepository.findByCodigoAndData(tds.get(0).getText());
+                                if (!ad.isPresent()) {
+                                    AcaoDados acaoDados = new AcaoDados();
+                                    AcaoDadosId acaoDadosId = new AcaoDadosId();
+                                    acaoDados.setRendimento(new BigDecimal(tds.get(1).getText().replace(",", ".").trim()));
+                                    acaoDadosId.setDataPagamento(LocalDate.parse(tds.get(3).getText(), DateTimeFormatter.ofPattern("dd/MM/yy")));
+                                    acaoDadosId.setDataBase(LocalDate.parse(tds.get(4).getText(), DateTimeFormatter.ofPattern("dd/MM/yy")));
+                                    acaoDadosId.setAcao(acao.get());
 
-                                try {
-                                    acaoDados.setAcaoDadosId(acaoDadosId);
-                                    acaoDados.setAcao(acao.get());
+                                    try {
+                                        acaoDados.setAcaoDadosId(acaoDadosId);
 
-                                    salvaDados(acaoDados);
-                                } catch (Exception e) {
-                                    log.error(e.getMessage(), e);
+                                        salvaDados(acaoDados);
+                                    } catch (Exception e) {
+                                        log.error(e.getMessage(), e);
+                                    }
                                 }
                             }
                         }

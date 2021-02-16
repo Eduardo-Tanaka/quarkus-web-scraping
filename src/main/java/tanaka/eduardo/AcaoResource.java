@@ -3,6 +3,7 @@ package tanaka.eduardo;
 import tanaka.eduardo.model.Acao;
 import tanaka.eduardo.repository.AcaoDadosRepository;
 import tanaka.eduardo.repository.AcaoRepository;
+import tanaka.eduardo.service.WebScrapingService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -23,6 +24,9 @@ public class AcaoResource {
     @Inject
     AcaoDadosRepository acaoDadosRepository;
 
+    @Inject
+    WebScrapingService webScrapingService;
+
     @GET
     public Response getAcoes() {
         return Response.ok().entity(acaoRepository.listAll()).build();
@@ -36,8 +40,9 @@ public class AcaoResource {
 
     @POST
     @Transactional
-    public Response postAcao(Acao acao) {
+    public Response postAcao(Acao acao) throws Exception {
         acaoRepository.persist(acao);
+        webScrapingService.lePaginaCodigo(acao.getId());
         return Response.ok().entity(acao).build();
     }
 }

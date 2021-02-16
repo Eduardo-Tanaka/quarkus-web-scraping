@@ -1,6 +1,9 @@
 package tanaka.eduardo.model;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -10,10 +13,6 @@ public class AcaoDados implements Serializable {
 
     @EmbeddedId
     private AcaoDadosId acaoDadosId;
-
-    @ManyToOne
-    @JoinColumn(name = "CO_ACAO")
-    private Acao acao;
 
     @Column(name = "VL_RENDIMENTO")
     private BigDecimal rendimento;
@@ -26,13 +25,6 @@ public class AcaoDados implements Serializable {
         this.acaoDadosId = acaoDadosId;
     }
 
-    public Acao getAcao() {
-        return acao;
-    }
-
-    public void setAcao(Acao acao) {
-        this.acao = acao;
-    }
 
     public BigDecimal getRendimento() {
         return rendimento;
